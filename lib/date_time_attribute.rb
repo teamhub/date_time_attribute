@@ -103,6 +103,19 @@ module DateTimeAttribute
         define_method("#{attribute}_time=") do |val|
           in_time_zone(time_zone) do |time_zone|
             container = date_time_container(attribute).in_time_zone(time_zone)
+
+            if val.present? && val.kind_of?(String) && val.size < 16
+              if (val =~ /\A\d\d\d\d\Z/) == 0
+                val = val.insert(2, ':')
+              elsif (val =~ /\A\d\d\d\Z/) == 0
+                val = val.insert(1, ':')
+              elsif val.include?(',')
+                val = val.gsub(',', ':')
+              elsif val.include?('.')
+                val = val.gsub('.', ':')
+              end
+            end
+
             (container.time = val).tap do
               self.send("#{attribute}=", container.date_time)
             end
